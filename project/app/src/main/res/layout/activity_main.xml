@@ -3,28 +3,42 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:gravity="center_horizontal"
+    android:background="#FAF9F6">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Login"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_gravity="center"
-        android:layout_marginBottom="16dp" />
+    <!-- Logo da aplicação -->
+    <ImageView
+        android:id="@+id/logoImageView"
+        android:layout_width="320dp"
+        android:layout_height="320dp"
+        android:layout_marginBottom="1dp"
+        android:src="@drawable/logo"
+        android:contentDescription="App logo" />
 
+
+    <!-- Campo de Nome de Usuário -->
     <EditText
         android:id="@+id/usernameEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Username"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp"
+        android:padding="12dp"
+        android:textColor="#2E7D32"
+        android:textColorHint="#8D8D8D"
+        android:background="@android:drawable/edit_text" />
 
+    <!-- Campo de Senha com alternador de visibilidade -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:layout_marginBottom="16dp"
+        android:background="#FFFFFF"
+        android:elevation="4dp"
+        android:radius="16dp">
 
         <EditText
             android:id="@+id/passwordEditText"
@@ -32,20 +46,31 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:hint="Password"
-            android:inputType="textPassword" />
+            android:inputType="textPassword"
+            android:padding="8dp"
+            android:textColor="#2E7D32"
+            android:textColorHint="#8D8D8D"
+            android:background="@null" />
 
         <ImageView
             android:id="@+id/passwordVisibilityToggle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@android:drawable/ic_secure"
+            android:padding="8dp"
             android:contentDescription="Toggle Password Visibility" />
     </LinearLayout>
 
+    <!-- Botão de Login -->
     <Button
         android:id="@+id/loginButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Login"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="16dp"
+        android:padding="12dp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#2E7D32"
+        android:elevation="4dp" />
 </LinearLayout>
