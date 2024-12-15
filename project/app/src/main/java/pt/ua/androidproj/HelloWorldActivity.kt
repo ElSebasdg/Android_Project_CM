@@ -179,7 +179,7 @@ class HelloWorldActivity : AppCompatActivity() {
             val layout = inflater.inflate(R.layout.fragment_profile, container, false)
 
             val profileText: TextView = layout.findViewById(R.id.profileText)
-            profileText.text = "Bem-vindo ao Perfil!"
+            profileText.text = "LALALALALAL!"
 
             return layout
         }
