@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#FAF9F6">
+    android:layout_height="match_parent">
 
-    <!-- Mapa com bordas arredondadas -->
-    <org.osmdroid.views.MapView
-        android:id="@+id/mapView"
+    <!-- Container do MapView -->
+    <FrameLayout
+        android:id="@+id/mapContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Botão de Refresh -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/refreshButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:background="#FFFFFF"
-        android:elevation="4dp" />
+        android:src="@android:drawable/ic_popup_sync"
+        android:contentDescription="Refresh Map"
+        android:tint="@android:color/white"
+        android:backgroundTint="#2E7D32" />
+
+
 </FrameLayout>
