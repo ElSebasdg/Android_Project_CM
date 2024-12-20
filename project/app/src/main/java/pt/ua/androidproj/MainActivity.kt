@@ -7,6 +7,10 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 class MainActivity : AppCompatActivity() {
 
@@ -15,8 +19,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var passwordVisibilityToggle: ImageView
     private lateinit var loginButton: Button
 
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Inicializar o Firebase
+        FirebaseApp.initializeApp(this)
 
         // Conectar o layout ao código
         setContentView(R.layout.activity_main)
@@ -38,20 +47,20 @@ class MainActivity : AppCompatActivity() {
             passwordEditText.setSelection(passwordEditText.text.length)
         }
 
-        // Configurar a lógica do botão de login
         loginButton.setOnClickListener {
-            val username = usernameEditText.text.toString().trim()
-            val password = passwordEditText.text.toString().trim()
+            val email = usernameEditText.text.toString() // Assuming username is email
+            val password = passwordEditText.text.toString()
 
-            if (username == "admin" && password == "admin") {
-                // Login bem-sucedido: navegar para HelloWorldActivity
-                val intent = Intent(this, HelloWorldActivity::class.java)
-                startActivity(intent)
-                finish() // Fecha a MainActivity
-            } else {
-                // Login inválido: exibir mensagem de erro
-                Toast.makeText(this, "Invalid Username or Password", Toast.LENGTH_SHORT).show()
-            }
+            auth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        val intent = Intent(this, HelloWorldActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        Toast.makeText(this, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                    }
+                }
         }
     }
 }
