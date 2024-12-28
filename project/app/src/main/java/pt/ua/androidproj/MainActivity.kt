@@ -2,11 +2,13 @@ package pt.ua.androidproj
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
 
@@ -15,43 +17,62 @@ class MainActivity : AppCompatActivity() {
     private lateinit var passwordVisibilityToggle: ImageView
     private lateinit var loginButton: Button
 
+    // Firebase Authentication instance
+    private lateinit var firebaseAuth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Conectar o layout ao código
         setContentView(R.layout.activity_main)
 
-        // Vincular elementos do layout aos componentes Kotlin
+        // Initialize FirebaseAuth
+        firebaseAuth = FirebaseAuth.getInstance()
+
+        // Bind views
         usernameEditText = findViewById(R.id.usernameEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
         passwordVisibilityToggle = findViewById(R.id.passwordVisibilityToggle)
         loginButton = findViewById(R.id.loginButton)
 
-        // Alternar visibilidade da senha
+        // Toggle password visibility
         passwordVisibilityToggle.setOnClickListener {
             val inputType = if (passwordEditText.inputType == 129) {
-                1 // Texto visível
+                1 // Visible text
             } else {
-                129 // Texto oculto
+                129 // Hidden text
             }
             passwordEditText.inputType = inputType
             passwordEditText.setSelection(passwordEditText.text.length)
         }
 
-        // Configurar a lógica do botão de login
+        // Login button logic
         loginButton.setOnClickListener {
-            val username = usernameEditText.text.toString().trim()
+            val email = usernameEditText.text.toString().trim()
             val password = passwordEditText.text.toString().trim()
 
-            if (username == "admin" && password == "admin") {
-                // Login bem-sucedido: navegar para HelloWorldActivity
-                val intent = Intent(this, HelloWorldActivity::class.java)
-                startActivity(intent)
-                finish() // Fecha a MainActivity
-            } else {
-                // Login inválido: exibir mensagem de erro
-                Toast.makeText(this, "Invalid Username or Password", Toast.LENGTH_SHORT).show()
+            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Toast.makeText(this, "Invalid email format", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
+
+            if (password.isEmpty() || password.length < 6) {
+                Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Authenticate with Firebase
+            firebaseAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        // Successful login
+                        val intent = Intent(this, HelloWorldActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        // Login failed
+                        Toast.makeText(this, "Authentication failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
         }
     }
 }
