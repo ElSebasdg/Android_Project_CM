@@ -1,13 +1,16 @@
 package pt.ua.androidproj
 
 import android.content.Intent
+import android.graphics.Canvas
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -15,10 +18,19 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import org.osmdroid.api.IGeoPoint
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.ItemizedIconOverlay
+import org.osmdroid.views.overlay.ItemizedOverlayWithFocus
+import org.osmdroid.views.overlay.Overlay
+import org.osmdroid.views.overlay.OverlayItem
+
 
 class HelloWorldActivity : AppCompatActivity() {
 
@@ -29,6 +41,9 @@ class HelloWorldActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_hello_world)
+
+        // User from intent
+        val uid = intent.getStringExtra("uid")
 
         // Vincular TabLayout e ViewPager2
         tabLayout = findViewById(R.id.tabLayout)
@@ -119,22 +134,23 @@ class HelloWorldActivity : AppCompatActivity() {
 
         private var mapView: MapView? = null
         private lateinit var mapContainer: FrameLayout
+        private val overlayItems = mutableListOf<OverlayItem>()
 
         override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
         ): View {
             val layout = inflater.inflate(R.layout.fragment_map, container, false)
 
-            // Configura o User-Agent do OSMDroid
+            // Configure the User-Agent for OSMDroid
             Configuration.getInstance().userAgentValue = "pt.ua.androidproj"
 
-            // Encontra o container do mapa
+            // Find the map container
             mapContainer = layout.findViewById(R.id.mapContainer)
 
-            // Adiciona o MapView ao container
+            // Add the MapView to the container
             setupMap()
 
-            // Configura o botão de Refresh
+            // Configure the refresh button
             val refreshButton: FloatingActionButton = layout.findViewById(R.id.refreshButton)
             refreshButton.setOnClickListener {
                 refreshMap()
@@ -144,11 +160,11 @@ class HelloWorldActivity : AppCompatActivity() {
         }
 
         fun setupMap() {
-            // Remove o mapa antigo
+            // Remove the old map
             mapView?.onDetach()
             mapContainer.removeAllViews()
 
-            // Adiciona um novo MapView
+            // Add a new MapView
             mapView = MapView(requireContext()).apply {
                 setTileSource(TileSourceFactory.MAPNIK)
                 setMultiTouchControls(true)
@@ -157,11 +173,112 @@ class HelloWorldActivity : AppCompatActivity() {
                     setCenter(GeoPoint(40.6405, -8.6538))
                 }
             }
+
             mapContainer.addView(mapView)
+
+            // Add a touch overlay for map taps
+            val overlay = object : Overlay() {
+                override fun onSingleTapConfirmed(e: MotionEvent, mapView: MapView): Boolean {
+                    // Capture the tap location
+                    val geoPoint = mapView.projection.fromPixels(e.x.toInt(), e.y.toInt())
+                    // Add pin at the tap location
+                    addPin(geoPoint)
+                    // Debugging tap event
+                    Toast.makeText(requireContext(), "Pin added at: $geoPoint", Toast.LENGTH_SHORT).show()
+                    return true
+                }
+
+                override fun draw(canvas: Canvas, mapView: MapView, shadow: Boolean) {
+                    // No drawing needed for this overlay
+                }
+            }
+
+            // Add the overlay to the map
+            mapView?.overlays?.add(overlay)
+
+            // Load Pins
+            loadPinsFromFirestore()
+
+            mapView?.invalidate() // Redraw the map
         }
 
         fun refreshMap() {
-            setupMap() // Recarrega o mapa
+            setupMap() // Reloads the map
+        }
+
+        private fun addPin(geoPoint: IGeoPoint) {
+            // Create a new OverlayItem for the pin
+            val pin = OverlayItem("New Pin", "User-created pin", geoPoint)
+            overlayItems.add(pin)
+
+            savePinToFirestore(pin)
+
+            // Update the overlay on the map
+            addOverlayToMap()
+        }
+
+        private fun savePinToFirestore(pin: OverlayItem) {
+            val uid = activity?.intent?.getStringExtra("uid")
+            val db = FirebaseFirestore.getInstance()
+
+            val pinData = hashMapOf(
+                "uid" to uid,
+                "latitude" to pin.point.latitude,
+                "longitude" to pin.point.longitude
+            )
+
+            db.collection("pins")
+                .add(pinData)
+        }
+
+        private fun loadPinsFromFirestore() {
+            val uid = activity?.intent?.getStringExtra("uid")
+            val db = FirebaseFirestore.getInstance()
+
+            db.collection("pins")
+                .whereEqualTo("uid", uid)
+                .get()
+                .addOnSuccessListener { result ->
+                    overlayItems.clear()
+                    for (document in result) {
+                        val latitude = document.getDouble("latitude")
+                        val longitude = document.getDouble("longitude")
+                        if (latitude != null && longitude != null) {
+                            val pin = OverlayItem("Pin from Firestore", "Loaded from Firestore", GeoPoint(latitude, longitude))
+                            overlayItems.add(pin)
+                        }
+                    }
+                    addOverlayToMap()
+                }
+                .addOnFailureListener { exception ->
+                    Toast.makeText(
+                        requireContext(),
+                        "Error loading pins: ${exception.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+        }
+        
+        private fun addOverlayToMap() {
+            val overlay = ItemizedOverlayWithFocus(
+                requireContext(),
+                overlayItems,
+                object : ItemizedIconOverlay.OnItemGestureListener<OverlayItem> {
+                    override fun onItemSingleTapUp(index: Int, item: OverlayItem?): Boolean {
+                        // Handle single tap on overlay item
+                        Toast.makeText(requireContext(), item?.title, Toast.LENGTH_SHORT).show()
+                        return true
+                    }
+        
+                    override fun onItemLongPress(index: Int, item: OverlayItem?): Boolean {
+                        // Handle long press on overlay item
+                        return false
+                    }
+                }
+            )
+            overlay.setFocusItemsOnTap(true)
+            mapView?.overlays?.add(overlay)
+            mapView?.invalidate() // Redraw the map
         }
 
         override fun onDestroyView() {
@@ -177,9 +294,9 @@ class HelloWorldActivity : AppCompatActivity() {
             inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
         ): View {
             val layout = inflater.inflate(R.layout.fragment_profile, container, false)
-
+            val uid = activity?.intent?.getStringExtra("uid")
             val profileText: TextView = layout.findViewById(R.id.profileText)
-            profileText.text = "LALALALALAL!"
+            profileText.text = "User ID: $uid"
 
             return layout
         }

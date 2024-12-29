@@ -66,6 +66,13 @@ class MainActivity : AppCompatActivity() {
                     if (task.isSuccessful) {
                         // Successful login
                         val intent = Intent(this, HelloWorldActivity::class.java)
+
+                        // Pass the user's email to the next activity
+                        val currentUser = firebaseAuth.currentUser
+                        currentUser?.let {
+                            intent.putExtra("uid", it.uid)
+                        }
+
                         startActivity(intent)
                         finish()
                     } else {
