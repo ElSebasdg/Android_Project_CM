@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context=".SensorDetailsBottomSheet">
+
+    <!-- Título do sensor -->
+    <TextView
+        android:id="@+id/sensorTypeTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tipo de Sensor"
+        android:textAppearance="?attr/textAppearanceHeadline6"
+        android:gravity="center"
+        android:padding="8dp" />
+
+    <!-- Valor do sensor -->
+    <TextView
+        android:id="@+id/sensorValueTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Valor Atual"
+        android:textAppearance="?attr/textAppearanceSubtitle1"
+        android:gravity="center"
+        android:padding="8dp" />
+
+</LinearLayout>

@@ -121,10 +121,9 @@ class MapFragment : Fragment() {
                     item?.let {
                         val lat = it.point.latitude
                         val lon = it.point.longitude
-                        Log.d("MapFragment", "Pin clicado: ($lat, $lon)")
-                        mapViewModel.fetchLatestSensorData(lat, lon)
-                    } ?: run {
-                        Toast.makeText(requireContext(), "Erro: item nulo", Toast.LENGTH_SHORT).show()
+                        mapViewModel.startSensorSimulation(lat, lon) // Inicia a simulação ao clicar no pin
+                        val bottomSheet = SensorDetailsBottomSheet.newInstance(lat, lon)
+                        bottomSheet.show(parentFragmentManager, "SensorDetailsBottomSheet")
                     }
                     return true
                 }
@@ -136,6 +135,7 @@ class MapFragment : Fragment() {
         mapView?.overlays?.add(overlay)
         mapView?.invalidate()
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
