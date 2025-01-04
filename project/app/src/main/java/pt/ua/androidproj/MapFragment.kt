@@ -75,7 +75,7 @@ class MapFragment : Fragment() {
         val overlay = object : Overlay() {
             override fun onSingleTapConfirmed(e: MotionEvent, mapView: MapView): Boolean {
                 val geoPoint = mapView.projection.fromPixels(e.x.toInt(), e.y.toInt())
-                addPin(geoPoint) // Adiciona um novo pino
+                //addPin(geoPoint) // Adiciona um novo pino
                 return true
             }
 

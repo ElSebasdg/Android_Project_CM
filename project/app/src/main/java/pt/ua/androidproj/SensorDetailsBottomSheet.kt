@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
@@ -28,18 +29,34 @@ class SensorDetailsBottomSheet : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_sensor_details, container, false)
+        val sensorContainer: LinearLayout = view.findViewById(R.id.sensorContainer)
 
-        val sensorTypeTextView: TextView = view.findViewById(R.id.sensorTypeTextView)
-        val sensorValueTextView: TextView = view.findViewById(R.id.sensorValueTextView)
-
-        // Observa mudanças no LiveData para atualizar os dados exibidos
         mapViewModel.latestSensorValue.observe(viewLifecycleOwner) { sensorData ->
-            val (type, value) = sensorData
-            sensorTypeTextView.text = "Tipo de Sensor: $type"
-            sensorValueTextView.text = "Valor Atual: $value"
+            // Limpa os dados antigos
+            sensorContainer.removeAllViews()
+
+            if (sensorData.isNotEmpty()) {
+                // Adiciona os sensores dinamicamente
+                sensorData.forEach { (type, value) ->
+                    val textView = TextView(requireContext()).apply {
+                        text = "$type: $value"
+                        textSize = 16f
+                        setPadding(8, 8, 8, 8)
+                    }
+                    sensorContainer.addView(textView)
+                }
+            } else {
+                // Exibe mensagem de nenhum sensor encontrado
+                val textView = TextView(requireContext()).apply {
+                    text = "Nenhum sensor encontrado."
+                    textSize = 16f
+                    setPadding(8, 8, 8, 8)
+                }
+                sensorContainer.addView(textView)
+            }
         }
 
-        // Inicia a busca dos dados mais recentes do sensor
+        // Inicia a busca dos sensores
         mapViewModel.fetchLatestSensorData(latitude, longitude)
 
         return view

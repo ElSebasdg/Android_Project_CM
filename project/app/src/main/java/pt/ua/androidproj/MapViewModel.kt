@@ -14,8 +14,9 @@ class MapViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
     // LiveData para exibir dados do sensor
-    private val _latestSensorValue = MutableLiveData<Pair<String, Double>>()
-    val latestSensorValue: LiveData<Pair<String, Double>> = _latestSensorValue
+    private val _latestSensorValue = MutableLiveData<List<Pair<String, Double>>>()
+    val latestSensorValue: LiveData<List<Pair<String, Double>>> = _latestSensorValue
+
 
     // Coroutine para simulação
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -23,44 +24,40 @@ class MapViewModel : ViewModel() {
     /**
      * Função para buscar os dados mais recentes de um sensor no Firestore.
      */
+
     fun fetchLatestSensorData(latitude: Double, longitude: Double) {
-        Log.d("MapViewModel", "Buscando sensor para: ($latitude, $longitude)")
+        Log.d("MapViewModel", "Buscando sensores para: ($latitude, $longitude)")
         db.collection("pins")
             .whereEqualTo("latitude", latitude)
             .whereEqualTo("longitude", longitude)
             .get()
             .addOnSuccessListener { result ->
-                Log.d("MapViewModel", "Documentos encontrados: ${result.size()}")
                 if (!result.isEmpty) {
                     val document = result.documents[0]
                     val sensors = document["sensors"] as? List<Map<String, Any>>
-                    Log.d("MapViewModel", "Sensores encontrados: $sensors")
                     if (sensors != null && sensors.isNotEmpty()) {
-                        val sensor = sensors[0] // Assumindo que você quer o primeiro sensor
-                        val values = sensor["value"] as? List<Double>
-                        val typeSensor = sensor["typeSensor"] as? String
-
-                        if (values != null && values.isNotEmpty() && typeSensor != null) {
-                            Log.d("MapViewModel", "Último valor: ${values.last()}, Tipo: $typeSensor")
-                            _latestSensorValue.postValue(typeSensor to values.last())
-                        } else {
-                            Log.e("MapViewModel", "Erro: Valores ou tipo do sensor estão nulos ou vazios.")
-                            _latestSensorValue.postValue("Erro nos valores do sensor" to -1.0)
+                        val latestSensorData = sensors.mapNotNull { sensor ->
+                            val typeSensor = sensor["typeSensor"] as? String
+                            val values = sensor["value"] as? List<Double>
+                            if (typeSensor != null && values != null && values.isNotEmpty()) {
+                                Pair(typeSensor, values.last())
+                            } else null
                         }
+                        _latestSensorValue.postValue(latestSensorData)
                     } else {
-                        Log.e("MapViewModel", "Erro: Nenhum sensor encontrado no documento.")
-                        _latestSensorValue.postValue("Nenhum sensor encontrado" to -1.0)
+                        _latestSensorValue.postValue(emptyList()) // Nenhum sensor encontrado
                     }
                 } else {
-                    Log.e("MapViewModel", "Erro: Nenhum documento encontrado para o pino.")
-                    _latestSensorValue.postValue("Nenhum documento encontrado" to -1.0)
+                    Log.e("MapViewModel", "Nenhum documento encontrado para o pino.")
+                    _latestSensorValue.postValue(emptyList())
                 }
             }
             .addOnFailureListener { exception ->
-                Log.e("MapViewModel", "Erro ao buscar sensor: ${exception.message}")
-                _latestSensorValue.postValue("Erro ao buscar sensor" to -1.0)
+                Log.e("MapViewModel", "Erro ao buscar sensores: ${exception.message}")
+                _latestSensorValue.postValue(emptyList())
             }
     }
+
 
 
     /**
@@ -110,19 +107,44 @@ class MapViewModel : ViewModel() {
     fun startSensorSimulation(latitude: Double, longitude: Double) {
         ioScope.launch {
             while (isActive) {
-                // Gerar um novo valor aleatório
-                val randomValue = Random.nextInt(20, 30) // Valores entre 20°C e 30°C
-                val timestamp = System.currentTimeMillis()
+                db.collection("pins")
+                    .whereEqualTo("latitude", latitude)
+                    .whereEqualTo("longitude", longitude)
+                    .get()
+                    .addOnSuccessListener { result ->
+                        if (!result.isEmpty) {
+                            val document = result.documents[0]
+                            val sensors = document["sensors"] as? List<Map<String, Any>> ?: return@addOnSuccessListener
+                            val updatedSensors = sensors.map { sensor ->
+                                val typeSensor = sensor["typeSensor"] as? String ?: return@map sensor
+                                val values = (sensor["value"] as? MutableList<Double>)?.toMutableList() ?: mutableListOf()
+                                val timestamps = (sensor["timestamp"] as? MutableList<Long>)?.toMutableList() ?: mutableListOf()
 
-                // Atualizar os dados no Firestore
-                updateSensorData(latitude, longitude, randomValue, timestamp)
+                                // Adiciona novos valores aleatórios
+                                values.add(Random.nextDouble(20.0, 30.0)) // Exemplo de faixa de valores
+                                timestamps.add(System.currentTimeMillis())
 
-                // Intervalo entre as atualizações (5 segundos)
-                delay(5000)
+                                sensor.toMutableMap().apply {
+                                    this["value"] = values
+                                    this["timestamp"] = timestamps
+                                }
+                            }
+
+                            // Atualiza os sensores no Firestore
+                            db.collection("pins").document(document.id)
+                                .update("sensors", updatedSensors)
+                                .addOnSuccessListener {
+                                    Log.d("MapViewModel", "Sensores atualizados com sucesso.")
+                                }
+                                .addOnFailureListener {
+                                    Log.e("MapViewModel", "Erro ao atualizar sensores: ${it.message}")
+                                }
+                        }
+                    }
+                delay(5000) // Atualiza os valores a cada 5 segundos
             }
         }
     }
-
     /**
      * Função para atualizar os dados de um sensor no Firestore.
      */
