@@ -14,9 +14,8 @@ class MapViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
     // LiveData para exibir dados do sensor
-    private val _latestSensorValue = MutableLiveData<List<Pair<String, Double>>>()
-    val latestSensorValue: LiveData<List<Pair<String, Double>>> = _latestSensorValue
-
+    private val _latestSensorValueWithUnit = MutableLiveData<List<Triple<String, Double, String>>>()
+    val latestSensorValueWithUnit: LiveData<List<Triple<String, Double, String>>> = _latestSensorValueWithUnit
 
     // Coroutine para simulação
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -25,7 +24,7 @@ class MapViewModel : ViewModel() {
      * Função para buscar os dados mais recentes de um sensor no Firestore.
      */
 
-    fun fetchLatestSensorData(latitude: Double, longitude: Double) {
+    fun fetchLatestSensorDataWithUnit(latitude: Double, longitude: Double) {
         Log.d("MapViewModel", "Buscando sensores para: ($latitude, $longitude)")
         db.collection("pins")
             .whereEqualTo("latitude", latitude)
@@ -39,22 +38,23 @@ class MapViewModel : ViewModel() {
                         val latestSensorData = sensors.mapNotNull { sensor ->
                             val typeSensor = sensor["typeSensor"] as? String
                             val values = sensor["value"] as? List<Double>
+                            val unit = sensor["unit"] as? String ?: "" // Pega a unidade (ou vazio)
                             if (typeSensor != null && values != null && values.isNotEmpty()) {
-                                Pair(typeSensor, values.last())
+                                Triple(typeSensor, values.last(), unit) // Inclui tipo, valor e unidade
                             } else null
                         }
-                        _latestSensorValue.postValue(latestSensorData)
+                        _latestSensorValueWithUnit.postValue(latestSensorData)
                     } else {
-                        _latestSensorValue.postValue(emptyList()) // Nenhum sensor encontrado
+                        _latestSensorValueWithUnit.postValue(emptyList()) // Nenhum sensor encontrado
                     }
                 } else {
                     Log.e("MapViewModel", "Nenhum documento encontrado para o pino.")
-                    _latestSensorValue.postValue(emptyList())
+                    _latestSensorValueWithUnit.postValue(emptyList())
                 }
             }
             .addOnFailureListener { exception ->
                 Log.e("MapViewModel", "Erro ao buscar sensores: ${exception.message}")
-                _latestSensorValue.postValue(emptyList())
+                _latestSensorValueWithUnit.postValue(emptyList())
             }
     }
 
@@ -115,15 +115,24 @@ class MapViewModel : ViewModel() {
                         if (!result.isEmpty) {
                             val document = result.documents[0]
                             val sensors = document["sensors"] as? List<Map<String, Any>> ?: return@addOnSuccessListener
+
                             val updatedSensors = sensors.map { sensor ->
                                 val typeSensor = sensor["typeSensor"] as? String ?: return@map sensor
                                 val values = (sensor["value"] as? MutableList<Double>)?.toMutableList() ?: mutableListOf()
                                 val timestamps = (sensor["timestamp"] as? MutableList<Long>)?.toMutableList() ?: mutableListOf()
 
-                                // Adiciona novos valores aleatórios
-                                values.add(Random.nextDouble(20.0, 30.0)) // Exemplo de faixa de valores
+                                // Gera valores aleatórios com base no tipo de sensor
+                                val newValue = when (typeSensor) {
+                                    "temperatura" -> (20..35).random().toDouble() // Temperatura em °C
+                                    "humidade" -> (30..70).random().toDouble()    // Humidade em %
+                                    else -> 0.0
+                                }
+
+                                // Adiciona o novo valor e timestamp
+                                values.add(newValue)
                                 timestamps.add(System.currentTimeMillis())
 
+                                // Retorna o sensor atualizado
                                 sensor.toMutableMap().apply {
                                     this["value"] = values
                                     this["timestamp"] = timestamps
@@ -145,6 +154,7 @@ class MapViewModel : ViewModel() {
             }
         }
     }
+
     /**
      * Função para atualizar os dados de um sensor no Firestore.
      */

@@ -25,21 +25,22 @@ class SensorDetailsBottomSheet : BottomSheetDialogFragment() {
             return fragment
         }
     }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_sensor_details, container, false)
         val sensorContainer: LinearLayout = view.findViewById(R.id.sensorContainer)
 
-        mapViewModel.latestSensorValue.observe(viewLifecycleOwner) { sensorData ->
+        mapViewModel.latestSensorValueWithUnit.observe(viewLifecycleOwner) { sensorData ->
             // Limpa os dados antigos
             sensorContainer.removeAllViews()
 
             if (sensorData.isNotEmpty()) {
                 // Adiciona os sensores dinamicamente
-                sensorData.forEach { (type, value) ->
+                sensorData.forEach { (type, value, unit) ->
                     val textView = TextView(requireContext()).apply {
-                        text = "$type: $value"
+                        text = "$type: $value $unit"
                         textSize = 16f
                         setPadding(8, 8, 8, 8)
                     }
@@ -57,10 +58,8 @@ class SensorDetailsBottomSheet : BottomSheetDialogFragment() {
         }
 
         // Inicia a busca dos sensores
-        mapViewModel.fetchLatestSensorData(latitude, longitude)
+        mapViewModel.fetchLatestSensorDataWithUnit(latitude, longitude)
 
         return view
     }
-
-
 }

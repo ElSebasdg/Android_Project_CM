@@ -37,7 +37,7 @@ class MapFragment : Fragment() {
         mapViewModel = ViewModelProvider(this).get(MapViewModel::class.java)
 
         // Observar mudanças no LiveData
-        mapViewModel.latestSensorValue.observe(viewLifecycleOwner) { sensorData ->
+        mapViewModel.latestSensorValueWithUnit.observe(viewLifecycleOwner) { sensorData ->
             val (type, value) = sensorData
             Toast.makeText(requireContext(), "$type: $value", Toast.LENGTH_SHORT).show()
         }
