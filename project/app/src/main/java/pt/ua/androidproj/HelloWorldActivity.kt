@@ -2,13 +2,19 @@ package pt.ua.androidproj
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.get
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
 
 class HelloWorldActivity : AppCompatActivity() {
 
@@ -78,21 +84,28 @@ class HelloWorldActivity : AppCompatActivity() {
         ): android.view.View? {
             val layout = inflater.inflate(R.layout.fragment_home, container, false)
 
-            // Dados simulados
-            val sensorData = listOf(
-                "Temperature: 20°C",
-                "Humidity: 65%",
-                "Pressure: 1013 hPa",
-                "Lux: 150 lx"
-            )
+            data class Sensor(val description: String = "") {
+                override fun toString() = description
+            }
 
-            // Configurar ListView
+            val db = FirebaseFirestore.getInstance()
+            val pins = db.collection("pins")
+
+            val sensorList = mutableListOf<Sensor>()
+            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, sensorList)
             val listView: android.widget.ListView = layout.findViewById(R.id.listView)
-            listView.adapter = android.widget.ArrayAdapter(
-                requireContext(),
-                android.R.layout.simple_list_item_1,
-                sensorData
-            )
+            listView.adapter = adapter
+
+            pins.get().addOnSuccessListener { documents ->
+                for (document in documents) {
+                    val sensors = document.data["sensors"] as? List<Map<String, Any>> ?: emptyList()
+                    for (sensorMap in sensors) {
+                        val desc = sensorMap["description"] as? String ?: "Unknown"
+                        sensorList.add(Sensor(desc))
+                    }
+                }
+                adapter.notifyDataSetChanged()
+            }
 
             // Configurar botão de logout
             val logoutButton: Button = layout.findViewById(R.id.logoutButton)
@@ -115,7 +128,32 @@ class HelloWorldActivity : AppCompatActivity() {
             val layout = inflater.inflate(R.layout.fragment_profile, container, false)
             val uid = activity?.intent?.getStringExtra("uid")
             val profileText: android.widget.TextView = layout.findViewById(R.id.profileText)
-            profileText.text = "User ID: $uid"
+            val dob_text: android.widget.TextView = layout.findViewById(R.id.dob_text)
+            val color_text: android.widget.TextView = layout.findViewById(R.id.color_text)
+
+            val user = FirebaseAuth.getInstance().currentUser
+            val email = user?.email
+            val username = email?.split("@")?.get(0)
+
+            // fetch color and dob from firestore collection "user_info" with document "uid" and fields "dob" and "color"
+            val db = FirebaseFirestore.getInstance()
+            val docRef = db.collection("user_info").document(uid!!)
+
+            docRef.get().addOnSuccessListener { document ->
+                if (document != null) {
+                    val dob_timestamp = document.getTimestamp("dob")
+                    val dob_dirty = dob_timestamp?.toDate().toString()
+                    val dob = dob_dirty.substring(0, 10)
+                    val color = document.getString("color")
+
+                    dob_text.text = "Date of Birth: $dob"
+                    color_text.text = "Favorite Color: $color"
+                }
+            }.addOnFailureListener { exception ->
+                println("Error getting documents: $exception")
+            }
+
+            profileText.text = "Welcome user $username"
 
             return layout
         }

@@ -16,13 +16,27 @@
         android:layout_gravity="center_horizontal"
         android:paddingBottom="16dp"/>
 
-    <!-- Exemplo de Informações do Usuário -->
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/dob_text"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Nome: Irineu"
-        android:textSize="18sp" />
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="16dp"
+        android:text="aa"
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
+    <TextView
+        android:id="@+id/color_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="16dp"
+        android:text="Perfil do utilizador"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <!-- Exemplo de Informações do Usuário -->
 
 
 </LinearLayout>
