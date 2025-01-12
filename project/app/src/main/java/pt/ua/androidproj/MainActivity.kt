@@ -1,6 +1,6 @@
 package pt.ua.androidproj
 
-import android.content.Intent
+import  android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
 import android.widget.Button
