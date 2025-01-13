@@ -102,13 +102,15 @@ The application uses **Firebase Firestore** for data storage.
 ### Collection user_info
 Stores user information:
 ```json
-{
-  "user_info": {
-    "uid": {
-      "color": "green",
-      "dob": "2003-08-15T00:00:00Z"
+{ 
+    "YwfXhFfGa7gzjMWBZtC2sGGPM9n2": { 
+        "color": "green", 
+        "dob": "2003-08-15T00:00:00Z" 
+    }, 
+    "3wtizcG0rBhg6khNODpAJ7zPIW2": { 
+        "color": "blue", 
+        "dob": "2000-05-22T00:00:00Z" 
     }
-  }
 }
 ```
 
@@ -117,22 +119,28 @@ Stores pins and sensor information:
 ```json
 {
   "pins": {
-    "pinID": {
-      "latitude": 40.642704,
-      "longitude": -8.651454,
+    "2PckZeLnuHYyElh3pxob": {
+      "latitude": 40.642704117473436,
+      "longitude": -8.651454448699951,
       "pinName": "House2",
       "sensors": [
         {
-          "description": "Xiaomi temperature sensor",
+          "description": "Sensor temperatura Xiaomi",
           "typeSensor": "temperature",
           "unit": "°C",
           "value": [22.5, 23.0, 24.1],
           "timestamp": [1672531200000, 1672534800000, 1672538400000]
+        },
+        {
+          "description": "Sensor de Humidade",
+          "typeSensor": "humidity",
+          "unit": "%",
+          "value": [45.0, 47.5, 50.2],
+          "timestamp": [1672531200000, 1672534800000, 1672538400000]
         }
       ]
-    }
+    },
   }
-}
 ```
 
 ---
@@ -165,7 +173,11 @@ Stores pins and sensor information:
 
 ---
 
-## License
+## Authors
 
-This project is distributed under the MIT license. See the `LICENSE` file for more details.
+This project was developed by the following contributors for the **Mobile Computing** course unit:
 
+- [Sebastian Duque González](https://github.com/ElSebasdg)  
+- [Daniel Nascimento Pedrinho](https://github.com/Pedrinho-Dev01)
+
+---
