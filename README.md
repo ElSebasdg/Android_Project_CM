@@ -20,18 +20,43 @@ The **Smart Agriculture Monitoring System** is an Android application developed 
 
 ### Login Screen
 Users enter their email and password for authentication.
+# Smart Agriculture Monitoring System
 
-![Login Screen](screenshots/imagem1.png)
+## About the Project
+
+The **Smart Agriculture Monitoring System** is an Android application developed to monitor environmental sensor data in real-time. With an intuitive and functional interface, the system allows users to visualize information such as temperature, humidity, pressure, and other data collected by distributed sensors.
+
+---
+
+## Features
+
+- **User Authentication**: Secure login with email and password.
+- **Pin Visualization on Map**: Each pin on the map represents a location with sensors.
+- **Sensor Details**: List of sensors available at each pin with detailed information.
+- **Data Simulation**: Sensor values are dynamically updated for demonstration purposes.
+- **Profile Management**: Users can view their profiles.
+
+---
+
+## Screenshots
+
+### Login Screen
+Users enter their email and password for authentication.
+
+<p align="center">
+  <img src="screenshots/imagem1.png" alt="Login Screen" width="50%">
+</p>
 
 ---
 
 ### Main Screen (Home)
 Displays a list of available pins and allows exploration of the sensors for each pin.
 
-![Main Screen](screenshots/imagem2.png)
+<p align="center">
+  <img src="screenshots/imagem2.png" alt="Main Screen" width="50%">
+</p>
 
 ---
-
 
 ### Map Tab
 The **Map Tab** provides a dynamic and interactive map interface to visualize sensor locations.
@@ -49,21 +74,24 @@ The **Map Tab** provides a dynamic and interactive map interface to visualize se
 3. **Use of ViewModel**:
    - A **ViewModel** is employed to manage and fetch sensor data asynchronously. It ensures separation of concerns and retains data during configuration changes.
    
-   
 #### Screenshots:
-- **Map Overview with Pins**  
-  ![Map Overview with Pins](screenshots/imagem3)
 
-- **Sensor Details Bottom Sheet**  
-  ![Sensor Details Bottom Sheet](screenshots/imagem4)
-   
-   
+<p align="center">
+  <img src="screenshots/imagem3.png" alt="Map Overview with Pins" width="50%">
+</p>
+
+<p align="center">
+  <img src="screenshots/imagem4.png" alt="Sensor Details Bottom Sheet" width="50%">
+</p>
+
 ---
 
 ### Profile Screen
 Users can view personal information, such as their date of birth and favorite color.
 
-![Profile Screen](screenshots/imagem5.png)
+<p align="center">
+  <img src="screenshots/imagem5.png" alt="Profile Screen" width="50%">
+</p>
 
 ---
 
@@ -71,7 +99,7 @@ Users can view personal information, such as their date of birth and favorite co
 
 The application uses **Firebase Firestore** for data storage.
 
-### Collection `user_info`
+### Collection user_info
 Stores user information:
 ```json
 {
