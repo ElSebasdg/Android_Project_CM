@@ -16,10 +16,15 @@ The **Smart Agriculture Monitoring System** is an Android application developed 
 
 ---
 
-## Screenshots
+
 
 ### Login Screen
 Users enter their email and password for authentication.
+
+**username:** admin@admin.com
+**password:** admin1
+
+
 # Smart Agriculture Monitoring System
 
 ## About the Project
