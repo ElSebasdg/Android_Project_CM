@@ -17,36 +17,13 @@ The **Smart Agriculture Monitoring System** is an Android application developed 
 ---
 
 
-
 ### Login Screen
 Users enter their email and password for authentication.
-
+---
 **username:** admin@admin.com
+---
 **password:** admin1
 
-
-# Smart Agriculture Monitoring System
-
-## About the Project
-
-The **Smart Agriculture Monitoring System** is an Android application developed to monitor environmental sensor data in real-time. With an intuitive and functional interface, the system allows users to visualize information such as temperature, humidity, pressure, and other data collected by distributed sensors.
-
----
-
-## Features
-
-- **User Authentication**: Secure login with email and password.
-- **Pin Visualization on Map**: Each pin on the map represents a location with sensors.
-- **Sensor Details**: List of sensors available at each pin with detailed information.
-- **Data Simulation**: Sensor values are dynamically updated for demonstration purposes.
-- **Profile Management**: Users can view their profiles.
-
----
-
-## Screenshots
-
-### Login Screen
-Users enter their email and password for authentication.
 
 <p align="center">
   <img src="screenshots/imagem1.png" alt="Login Screen" width="50%">
