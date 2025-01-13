@@ -19,11 +19,11 @@ The **Smart Agriculture Monitoring System** is an Android application developed 
 
 ### Login Screen
 Users enter their email and password for authentication.
----
+
 **username:** admin@admin.com
 ---
 **password:** admin1
-
+---
 
 <p align="center">
   <img src="screenshots/imagem1.png" alt="Login Screen" width="50%">
