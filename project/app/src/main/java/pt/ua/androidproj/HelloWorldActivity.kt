@@ -7,7 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.ListView
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -183,41 +185,47 @@ class HelloWorldActivity : AppCompatActivity() {
     }
 
     // Fragmento Perfil
+    // Fragmento Perfil
     class ProfileFragment : Fragment() {
         override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
         ): View? {
             val layout = inflater.inflate(R.layout.fragment_profile, container, false)
+
             val uid = activity?.intent?.getStringExtra("uid")
-            val profileText: android.widget.TextView = layout.findViewById(R.id.profileText)
-            val dob_text: android.widget.TextView = layout.findViewById(R.id.dob_text)
-            val color_text: android.widget.TextView = layout.findViewById(R.id.color_text)
+            val profileImage: ImageView = layout.findViewById(R.id.profileImage)
+            val profileText: TextView = layout.findViewById(R.id.profileText)
+            val dobText: TextView = layout.findViewById(R.id.dob_text)
+            val colorText: TextView = layout.findViewById(R.id.color_text)
 
             val user = FirebaseAuth.getInstance().currentUser
             val email = user?.email
             val username = email?.split("@")?.get(0)
 
-            // Fetch color and dob from Firestore
+            // Set default profile picture
+            profileImage.setImageResource(R.drawable.profile)
+
+            // Fetch color and DOB from Firestore
             val db = FirebaseFirestore.getInstance()
             val docRef = db.collection("user_info").document(uid!!)
 
             docRef.get().addOnSuccessListener { document ->
                 if (document != null) {
-                    val dob_timestamp = document.getTimestamp("dob")
-                    val dob_dirty = dob_timestamp?.toDate().toString()
-                    val dob = dob_dirty.substring(0, 10)
-                    val color = document.getString("color")
+                    val dobTimestamp = document.getTimestamp("dob")
+                    val dob = dobTimestamp?.toDate()?.toString()?.substring(0, 10) ?: "Unknown DOB"
+                    val color = document.getString("color") ?: "Unknown Color"
 
-                    dob_text.text = "Date of Birth: $dob"
-                    color_text.text = "Favorite Color: $color"
+                    dobText.text = "Date of Birth: $dob"
+                    colorText.text = "Favorite Color: $color"
                 }
             }.addOnFailureListener { exception ->
-                println("Error getting documents: $exception")
+                println("Error fetching user data: $exception")
             }
 
-            profileText.text = "Welcome user $username"
+            profileText.text = "Welcome, $username!"
 
             return layout
         }
     }
+
 }
